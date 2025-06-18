@@ -1,0 +1,331 @@
+:root {
+  --color-dark-bg-1: #1a1a2e;
+  --color-dark-bg-2: #0f0f1d;
+  --color-light-text: #e0e0e0;
+
+  --color-blue-primary: #1e88e5;
+  --color-blue-light: #64b5f6;
+  --color-blue-dark: #1565c0;
+
+  --color-blue-success: #4fc3f7;
+  --color-blue-warning: #29b6f6;
+  --color-blue-danger: #0288d1;
+
+  --color-gray-card: #2d2d44;
+  --color-gray-border: #444455;
+  --color-white: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, var(--color-dark-bg-1), var(--color-dark-bg-2));
+  color: var(--color-light-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.dashboard-container {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.dashboard-header-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-title {
+  font-size: 3.75em;
+  font-weight: 900;
+  color: var(--color-blue-light);
+  margin-bottom: 8px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.dashboard-slogan {
+  font-size: 1.1em;
+  color: var(--color-light-text);
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: var(--color-blue-light);
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.add-site-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 35px;
+  background-color: var(--color-gray-card);
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-blue-dark);
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.form-input {
+  border: 1.8px solid var(--color-blue-dark);
+  padding: 15px 20px;
+  border-radius: 7px;
+  background-color: var(--color-dark-bg-1);
+  color: var(--color-light-text);
+  font-size: 1em;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input::placeholder {
+  color: var(--color-gray-border);
+}
+
+.form-input:focus {
+  border-color: var(--color-blue-light);
+  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+}
+
+.form-button {
+  background-color: var(--color-blue-primary);
+  color: var(--color-white);
+  font-weight: bold;
+  padding: 15px 25px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  font-size: 1.05em;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-button:hover {
+  background-color: var(--color-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.site-card {
+  background-color: var(--color-gray-card);
+  border-radius: 12px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.22);
+  padding: 12px;
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
+  border: 1px solid var(--color-blue-dark);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.site-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.site-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.site-avatar {
+  width: 50px;
+  height: 50px;
+  background-color: var(--color-blue-light);
+  color: var(--color-dark-bg-2);
+  font-weight: bold;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.site-url {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--color-light-text);
+  word-break: break-all;
+  margin: 0;
+}
+
+.site-details {
+  font-size: 0.95em;
+  margin: 8px 0;
+  color: var(--color-light-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-username {
+  font-weight: 500;
+  color: var(--color-blue-light);
+}
+
+.site-badge {
+  font-size: 1.1em;
+  margin-left: 8px;
+}
+
+.site-uptime-section {
+  margin-top: 15px;
+}
+
+.site-uptime-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+}
+
+.uptime-label {
+  font-weight: 500;
+}
+
+.uptime-percentage {
+  font-weight: bold;
+}
+
+.progress-bar-container {
+  background-color: var(--color-gray-border);
+  border-radius: 5px;
+  height: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 5px;
+  transition: width 0.5s ease-out;
+}
+
+.progress-green {
+  background-color: var(--color-blue-success);
+}
+
+.progress-yellow {
+  background-color: var(--color-blue-warning);
+}
+
+.progress-red {
+  background-color: var(--color-blue-danger);
+}
+
+.text-green {
+  color: var(--color-blue-success);
+}
+
+.text-yellow {
+  color: var(--color-blue-warning);
+}
+
+.text-red {
+  color: var(--color-blue-danger);
+}
+
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 0 10px;
+  justify-content: center;
+}
+
+.leaderboard-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaderboard-rank {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--color-blue-light);
+}
+
+.empty-state-message {
+  font-size: 1em;
+  text-align: center;
+  margin-top: 25px;
+  color: var(--color-light-text);
+  opacity: 0.8;
+}
+
+.form-status-message {
+  font-size: 0.9em;
+  text-align: center;
+  margin-top: 8px;
+  color: var(--color-blue-light);
+  font-weight: 500;
+}
+
+.search-bar-container {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.search-input {
+  max-width: 650px;
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 0.95em;
+}
+
+.page-footer {
+  margin-top: 30px;
+  padding: 30px 15px;
+  text-align: center;
+  color: var(--color-white-border);
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-footer p {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .add-site-form {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .form-input {
+    flex-grow: 1;
+  }
+
+  .leaderboard-grid {
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .search-input {
+    padding: 12px 18px;
+  }
+}
