@@ -38,5 +38,10 @@ jobs:
             cp -r dist/* ../server/static/
 
             cd ../server
-            pm2 restart uptime || pm2 start app.py --interpreter venv/bin/python --name uptime
+
+            pm2 delete uptime || true
+
+            pm2 start app.py --name uptime --interpreter venv/bin/python
+
+            pm2 save
           EOF
