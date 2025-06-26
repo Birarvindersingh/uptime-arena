@@ -18,6 +18,8 @@ class Site(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     statuses = db.relationship('Status', backref='site', lazy=True)
 
+    __table_args__ = (db.UniqueConstraint('user_id', 'url', name='unique_user_url'),)
+
 class Status(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
