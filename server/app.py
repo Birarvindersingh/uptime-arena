@@ -3,7 +3,7 @@ from models import db, User, Site, Status
 import config
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../client/dist", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_object(config)
 db.init_app(app)
