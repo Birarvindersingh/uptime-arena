@@ -12,6 +12,12 @@ export default function AddSiteForm({ onRefresh }) {
     return pattern.test(url.trim());
   }
 
+  function normalizeUrl(url) {
+    let clean = url.trim().toLowerCase();
+    if (clean.startsWith("www.")) clean = clean.slice(4);
+    return clean;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -24,7 +30,7 @@ export default function AddSiteForm({ onRefresh }) {
     setLoading(true);
     setStatusMsg("");
     try {
-      await addSite(username, url);
+      await addSite(username, normalizeUrl(url));
       setStatusMsg("✅ Added!");
       setUsername("");
       setUrl("");
