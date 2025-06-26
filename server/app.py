@@ -22,6 +22,12 @@ def serve_react(path):
     else:
         return send_from_directory(app.static_folder, "index.html")
 
+def normalize_url(raw_url):
+    url = raw_url.strip().lower()
+    if url.startswith("www."):
+        url = url[4:]
+    return url
+
 @app.route("/api/sites", methods=["GET"])
 def get_sites():
     sites = Site.query.all()
@@ -39,13 +45,15 @@ def get_sites():
 @app.route("/api/sites", methods=["POST"])
 def add_site():
     data = request.get_json()
-    username = data.get("username")
-    url = data.get("url", "").strip().lower()
+    username = data.get("username", "").strip()
+    raw_url = data.get("url", "").strip()
 
-    if not username or not url:
+    if not username or not raw_url:
         return jsonify({"error": "Missing username or URL"}), 400
 
-    if not re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", url):
+    normalized_url = normalize_url(raw_url)
+
+    if not re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", normalized_url):
         return jsonify({"error": "Invalid domain format"}), 400
 
     user = User.query.filter_by(username=username).first()
@@ -54,11 +62,11 @@ def add_site():
         db.session.add(user)
         db.session.commit()
 
-    existing = Site.query.filter_by(user_id=user.id, url=url).first()
+    existing = Site.query.filter_by(user_id=user.id, url=normalized_url).first()
     if existing:
         return jsonify({"error": "Site already exists"}), 409
 
-    new_site = Site(user_id=user.id, url=url)
+    new_site = Site(user_id=user.id, url=normalized_url)
     db.session.add(new_site)
     db.session.commit()
 
