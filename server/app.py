@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 from models import db, User, Site, Status
-import config, os
+import config, os, re
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="")
@@ -40,10 +40,13 @@ def get_sites():
 def add_site():
     data = request.get_json()
     username = data.get("username")
-    url = data.get("url")
+    url = data.get("url", "").strip().lower()
 
     if not username or not url:
         return jsonify({"error": "Missing username or URL"}), 400
+
+    if not re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", url):
+        return jsonify({"error": "Invalid domain format"}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
