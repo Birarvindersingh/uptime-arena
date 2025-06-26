@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "http://3.140.213.227:5000";
 
 export async function fetchSites() {
     const res = await fetch(`${BASE_URL}/api/sites`);
