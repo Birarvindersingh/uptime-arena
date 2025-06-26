@@ -8,8 +8,8 @@ export default function AddSiteForm({ onRefresh }) {
   const [statusMsg, setStatusMsg] = useState("");
 
   function isValidSiteUrl(url) {
-    const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return domainPattern.test(url.trim());
+    const pattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return pattern.test(url.trim());
   }
 
   const handleSubmit = async (e) => {
