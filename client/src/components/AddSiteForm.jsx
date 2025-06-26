@@ -8,20 +8,15 @@ export default function AddSiteForm({ onRefresh }) {
   const [statusMsg, setStatusMsg] = useState("");
 
   function isValidSiteUrl(url) {
-    const urlPattern = new RegExp(
-      "^(https?:\\/\\/)" +
-        "((([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,})|" +
-        "localhost)" +
-        "(\\:\\d+)?(\\/.*)?$"
-    );
-    return urlPattern.test(url.trim());
+    const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return domainPattern.test(url.trim());
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isValidSiteUrl(url)) {
-      setStatusMsg("❌ Invalid URL");
+      setStatusMsg("❌ Invalid URL format");
       setTimeout(() => setStatusMsg(""), 3000);
       return;
     }
@@ -54,7 +49,7 @@ export default function AddSiteForm({ onRefresh }) {
       <input
         value={url}
         onChange={e => setUrl(e.target.value)}
-        placeholder="Site URL"
+        placeholder="Site URL (e.g. google.com)"
         required
         className="form-input"
       />
