@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from models import db, User, Site, Status
-import config
+import config, os
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="")
@@ -13,38 +13,53 @@ def create_tables():
     app.before_request_funcs[None].remove(create_tables)
     db.create_all()
 
-@app.route('/')
-def home():
-    return "Hello from Uptime Arena!"
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react(path):
+    file_path = os.path.join(app.static_folder, path)
+    if path != "" and os.path.exists(file_path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
 
-@app.route('/api/sites', methods=['GET'])
+@app.route("/api/sites", methods=["GET"])
 def get_sites():
     sites = Site.query.all()
     data = []
     for site in sites:
-        uptimes = [s.is_up for s in site.statuses]
-        avg = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 0
+        uptimes = [status.is_up for status in site.statuses]
+        avg_uptime = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 0
         data.append({
-            'url': site.url,
-            'user': site.user.username,
-            'uptime': avg
+            "url": site.url,
+            "user": site.user.username if site.user else None,
+            "uptime": avg_uptime
         })
     return jsonify(data)
 
-@app.route('/api/sites', methods=['POST'])
+@app.route("/api/sites", methods=["POST"])
 def add_site():
-    data = request.json
-    username = data['username']
-    url = data['url']
+    data = request.get_json()
+    username = data.get("username")
+    url = data.get("url")
+
+    if not username or not url:
+        return jsonify({"error": "Missing username or URL"}), 400
+
     user = User.query.filter_by(username=username).first()
     if not user:
         user = User(username=username)
         db.session.add(user)
         db.session.commit()
-    site = Site(url=url, user=user)
-    db.session.add(site)
+
+    existing = Site.query.filter_by(user_id=user.id, url=url).first()
+    if existing:
+        return jsonify({"error": "Site already exists"}), 409
+
+    new_site = Site(user_id=user.id, url=url)
+    db.session.add(new_site)
     db.session.commit()
-    return jsonify({'message': 'Site added'}), 201
+
+    return jsonify({"message": "Site added successfully"}), 201
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
