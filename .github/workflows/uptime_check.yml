@@ -1,4 +1,4 @@
-name: Uptime Check Every 5 Minutes
+name: Periodic Uptime Check
 
 on:
   schedule:
