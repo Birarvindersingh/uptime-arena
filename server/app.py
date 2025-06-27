@@ -8,11 +8,6 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_object(config)
 db.init_app(app)
 
-@app.before_request
-def create_tables():
-    app.before_request_funcs[None].remove(create_tables)
-    db.create_all()
-
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_react(path):
@@ -73,4 +68,6 @@ def add_site():
     return jsonify({"message": "Site added successfully"}), 201
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(host="0.0.0.0", port=5000)
