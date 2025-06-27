@@ -1,4 +1,5 @@
 import requests
+from urllib.parse import urlparse
 from models import db, Site, Status
 from app import app
 from datetime import datetime, timezone, timedelta
@@ -8,8 +9,13 @@ def check_sites():
         print(app.config['SQLALCHEMY_DATABASE_URI'])
         sites = Site.query.all()
         for site in sites:
+            url = site.url
+            parsed = urlparse(url)
+            if not parsed.scheme:
+                url = "https://" + url
+
             try:
-                r = requests.get(site.url, timeout=5, allow_redirects=True)
+                r = requests.get(url, timeout=5, allow_redirects=True)
                 is_up = r.status_code < 400
             except Exception:
                 is_up = False
