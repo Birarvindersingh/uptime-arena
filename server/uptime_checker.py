@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 def check_sites():
     with app.app_context():
+        print(app.config['SQLALCHEMY_DATABASE_URI'])
         sites = Site.query.all()
         for site in sites:
             try:
@@ -23,7 +24,6 @@ def check_sites():
                 now = datetime.now(timezone.utc)
                 if (not site.last_alert_time) or (now - site.last_alert_time > timedelta(hours=1)):
                     print(f"🚨 ALERT: {site.url} is DOWN! (No alert sent in last hour)")
-                    
                     site.last_alert_time = now
 
             db.session.commit()
