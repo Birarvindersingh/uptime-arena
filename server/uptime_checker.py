@@ -22,7 +22,10 @@ def check_sites():
 
             if not is_up:
                 now = datetime.now(timezone.utc)
-                if (not site.last_alert_time) or (now - site.last_alert_time > timedelta(hours=1)):
+                last_alert = site.last_alert_time
+                if last_alert and last_alert.tzinfo is None:
+                    last_alert = last_alert.replace(tzinfo=timezone.utc)
+                if (not last_alert) or (now - last_alert > timedelta(hours=1)):
                     print(f"🚨 ALERT: {site.url} is DOWN! (No alert sent in last hour)")
                     site.last_alert_time = now
 
