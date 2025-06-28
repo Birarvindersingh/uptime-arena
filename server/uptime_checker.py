@@ -5,23 +5,23 @@ from app import app
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import desc
 
+def check_site_status(raw_url):
+    url = raw_url
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        url = "https://" + url
+    try:
+        r = requests.get(url, timeout=5, allow_redirects=True)
+        is_up = r.status_code < 400
+    except Exception:
+        is_up = False
+    return is_up
+
 def check_sites():
     with app.app_context():
         sites = Site.query.all()
         for site in sites:
-            url = site.url
-            parsed = urlparse(url)
-            if not parsed.scheme:
-                url = "https://" + url
-            try:
-                r = requests.get(url, timeout=5, allow_redirects=True)
-                is_up = r.status_code < 400
-                final_url = r.url.rstrip("/")
-                original_url = url.rstrip("/")
-                if original_url != final_url:
-                    site.url = final_url
-            except Exception:
-                is_up = False
+            is_up = check_site_status(site.url)
             status = Status(site=site, is_up=is_up)
             db.session.add(status)
             site.is_up = is_up
@@ -34,6 +34,7 @@ def check_sites():
                 if (not last_alert) or (now - last_alert > timedelta(hours=1)):
                     site.last_alert_time = now
             db.session.commit()
+
         MAX_STATUS_PER_SITE = 50
         for site in Site.query.all():
             excess_statuses = Status.query.filter_by(site_id=site.id).order_by(desc(Status.timestamp)).offset(MAX_STATUS_PER_SITE).all()
