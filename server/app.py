@@ -3,6 +3,7 @@ from models import db, User, Site, Status
 import config, os, re
 from flask_cors import CORS
 from datetime import datetime, timezone
+from uptime_checker import check_site_status 
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -33,14 +34,21 @@ def get_sites():
     sites = Site.query.all()
     data = []
     RECENT_COUNT = 20
+
     for site in sites:
-        recent_statuses = sorted(site.statuses, key=lambda s: s.timestamp, reverse=True)[:RECENT_COUNT]
+        recent_statuses = Status.query.filter_by(site_id=site.id)\
+                              .order_by(Status.timestamp.desc())\
+                              .limit(RECENT_COUNT).all()
+        
         uptimes = [status.is_up for status in recent_statuses]
+        
         uptime_percent = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 100.0
+        
         data.append({
             "url": site.url,
             "user": site.user.username if site.user else None,
-            "uptime": uptime_percent
+            "uptime": uptime_percent,
+            "is_up_current": site.is_up
         })
     return jsonify(data)
 
@@ -49,34 +57,49 @@ def add_site():
     data = request.get_json()
     username = data.get("username", "").strip()
     raw_url = data.get("url", "").strip()
+
     if not username or not raw_url:
         return jsonify({"error": "Missing username or URL"}), 400
+
     normalized_url = normalize_url(raw_url)
+
     if not re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", normalized_url):
         return jsonify({"error": "Invalid domain format"}), 400
+
     user = User.query.filter_by(username=username).first()
     if not user:
         user = User(username=username)
         db.session.add(user)
         db.session.commit()
+
     existing = Site.query.filter_by(user_id=user.id, url=normalized_url).first()
     if existing:
         return jsonify({"error": "Site already exists"}), 409
 
     new_site = Site(user_id=user.id, url=normalized_url)
     db.session.add(new_site)
-    db.session.commit()
+    db.session.flush()
 
-    from uptime_checker import check_site_status
-    is_up = check_site_status(normalized_url)
-    from models import Status
-    status = Status(site=new_site, is_up=is_up)
+    is_up, response_time_ms, error_message, final_url_after_redirect = check_site_status(normalized_url)
+    
+    if final_url_after_redirect:
+        new_site.url = final_url_after_redirect
+
+    status = Status(
+        site=new_site,
+        is_up=is_up,
+        response_time_ms=response_time_ms,
+        error_message=error_message
+    )
     db.session.add(status)
+
     new_site.is_up = is_up
     new_site.last_checked = datetime.now(timezone.utc)
+    new_site.last_alert_time = None
+
     db.session.commit()
 
-    return jsonify({"message": "Site added successfully"}), 201
+    return jsonify({"message": "Site added successfully", "initial_status": "UP" if is_up else "DOWN"}), 201
 
 if __name__ == "__main__":
     with app.app_context():
