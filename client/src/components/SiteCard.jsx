@@ -31,7 +31,11 @@ const SiteCard = ({ site }) => {
     <div className="site-card">
       <div className="site-card-header">
         <div className="site-avatar">{getInitials(username)}</div>
-        <h2 className="site-url" title={url}>{url}</h2>
+        <h2 className="site-url" title={url}>
+          <a href={`https://${url}`} target="_blank" rel="noopener noreferrer">
+            {url}
+          </a>
+        </h2>
       </div>
 
       <p className="site-details">
