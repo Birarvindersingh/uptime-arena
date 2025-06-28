@@ -8,7 +8,7 @@ export default function AddSiteForm({ onRefresh }) {
   const [statusMsg, setStatusMsg] = useState("");
 
   function isValidSiteUrl(url) {
-    const pattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const pattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return pattern.test(url.trim());
   }
 
