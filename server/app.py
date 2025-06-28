@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from models import db, User, Site, Status
 import config, os, re
 from flask_cors import CORS
+from datetime import datetime, timezone
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -61,9 +62,20 @@ def add_site():
     existing = Site.query.filter_by(user_id=user.id, url=normalized_url).first()
     if existing:
         return jsonify({"error": "Site already exists"}), 409
+
     new_site = Site(user_id=user.id, url=normalized_url)
     db.session.add(new_site)
     db.session.commit()
+
+    from uptime_checker import check_site_status
+    is_up = check_site_status(normalized_url)
+    from models import Status
+    status = Status(site=new_site, is_up=is_up)
+    db.session.add(status)
+    new_site.is_up = is_up
+    new_site.last_checked = datetime.now(timezone.utc)
+    db.session.commit()
+
     return jsonify({"message": "Site added successfully"}), 201
 
 if __name__ == "__main__":
