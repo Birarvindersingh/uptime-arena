@@ -19,21 +19,27 @@ def serve_react(path):
 
 def normalize_url(raw_url):
     url = raw_url.strip().lower()
+    if url.startswith("http://"):
+        url = url[len("http://"):]
+    elif url.startswith("https://"):
+        url = url[len("https://"):]
     if url.startswith("www."):
         url = url[4:]
-    return url
+    return url.rstrip("/")
 
 @app.route("/api/sites", methods=["GET"])
 def get_sites():
     sites = Site.query.all()
     data = []
+    RECENT_COUNT = 20
     for site in sites:
-        uptimes = [status.is_up for status in site.statuses]
-        avg_uptime = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 0
+        recent_statuses = sorted(site.statuses, key=lambda s: s.timestamp, reverse=True)[:RECENT_COUNT]
+        uptimes = [status.is_up for status in recent_statuses]
+        uptime_percent = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 100.0
         data.append({
             "url": site.url,
             "user": site.user.username if site.user else None,
-            "uptime": avg_uptime
+            "uptime": uptime_percent
         })
     return jsonify(data)
 
@@ -42,29 +48,22 @@ def add_site():
     data = request.get_json()
     username = data.get("username", "").strip()
     raw_url = data.get("url", "").strip()
-
     if not username or not raw_url:
         return jsonify({"error": "Missing username or URL"}), 400
-
     normalized_url = normalize_url(raw_url)
-
     if not re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", normalized_url):
         return jsonify({"error": "Invalid domain format"}), 400
-
     user = User.query.filter_by(username=username).first()
     if not user:
         user = User(username=username)
         db.session.add(user)
         db.session.commit()
-
     existing = Site.query.filter_by(user_id=user.id, url=normalized_url).first()
     if existing:
         return jsonify({"error": "Site already exists"}), 409
-
     new_site = Site(user_id=user.id, url=normalized_url)
     db.session.add(new_site)
     db.session.commit()
-
     return jsonify({"message": "Site added successfully"}), 201
 
 if __name__ == "__main__":
