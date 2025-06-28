@@ -26,3 +26,4 @@ class Status(db.Model):
     is_up = db.Column(db.Boolean, nullable=False)
     response_time_ms = db.Column(db.Integer, nullable=True)
     site_id = db.Column(db.Integer, db.ForeignKey('site.id'), nullable=False)
+    error_message = db.Column(db.String(500), nullable=True)
