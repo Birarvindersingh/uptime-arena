@@ -3,7 +3,7 @@ from models import db, User, Site, Status
 import config, os, re
 from flask_cors import CORS
 from datetime import datetime, timezone
-from uptime_checker import check_site_status 
+import uptime_checker
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -37,8 +37,8 @@ def get_sites():
 
     for site in sites:
         recent_statuses = Status.query.filter_by(site_id=site.id)\
-                              .order_by(Status.timestamp.desc())\
-                              .limit(RECENT_COUNT).all()
+                               .order_by(Status.timestamp.desc())\
+                               .limit(RECENT_COUNT).all()
         
         uptimes = [status.is_up for status in recent_statuses]
         
@@ -80,7 +80,7 @@ def add_site():
     db.session.add(new_site)
     db.session.flush()
 
-    is_up, response_time_ms, error_message, final_url_after_redirect = check_site_status(normalized_url)
+    is_up, response_time_ms, error_message, final_url_after_redirect = uptime_checker.check_site_status(normalized_url) 
     
     if final_url_after_redirect:
         new_site.url = final_url_after_redirect
