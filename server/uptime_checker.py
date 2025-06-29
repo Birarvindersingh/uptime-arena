@@ -57,8 +57,9 @@ def check_sites(app):
             is_up, response_time_ms, error_message, new_url = check_site_status(site.url)
             
             if new_url:
+                old_url = site.url
                 site.url = new_url
-                print(f"Updated URL for {site.user.username}'s site: {site.url} -> {new_url}")
+                print(f"Updated URL for {site.user.username}'s site: {old_url} -> {new_url}")
 
             status = Status(site=site, is_up=is_up, response_time_ms=response_time_ms, error_message=error_message)
             db.session.add(status)
@@ -66,11 +67,19 @@ def check_sites(app):
             site.is_up = is_up
             site.last_checked = datetime.now(timezone.utc)
 
+            now = datetime.now(timezone.utc)
+            last_alert = site.last_alert_time
+            if last_alert and last_alert.tzinfo is None:
+                last_alert = last_alert.replace(tzinfo=timezone.utc)
+
             if not is_up:
-                if not site.last_alert_time: 
+                if (not last_alert) or (now - last_alert > timedelta(hours=1)):
                     print(f"🚨 ALERT: {site.url} is DOWN! Reason: {error_message}")
-                    send_alert_email(site.url)
-                    site.last_alert_time = datetime.now(timezone.utc)
+                    try:
+                        send_alert_email(site.url)
+                    except Exception as e:
+                        print(f"Failed to send alert email: {e}")
+                    site.last_alert_time = now
             else:
                 site.last_alert_time = None
 
