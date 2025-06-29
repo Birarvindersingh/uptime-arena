@@ -1,7 +1,6 @@
 import requests
 from urllib.parse import urlparse
 from models import db, Site, Status
-from app import app
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import desc
 
@@ -45,7 +44,7 @@ def check_site_status(raw_url):
     
     return is_up, response_time_ms, error_message, new_url_after_redirect
 
-def check_sites():
+def check_sites(app):
     with app.app_context():
         print(f"Starting periodic uptime check at {datetime.now(timezone.utc)}")
         sites = Site.query.all()
@@ -95,4 +94,4 @@ def check_sites():
 if __name__ == '__main__':
     from app import app 
     with app.app_context():
-        check_sites()
+        check_sites(app)
