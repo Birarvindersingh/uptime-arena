@@ -3,7 +3,6 @@ from urllib.parse import urlparse
 from models import db, Site, Status
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import desc
-from send_email import send_alert_email
 
 REQUEST_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -66,22 +65,6 @@ def check_sites(app):
 
             site.is_up = is_up
             site.last_checked = datetime.now(timezone.utc)
-
-            now = datetime.now(timezone.utc)
-            last_alert = site.last_alert_time
-            if last_alert and last_alert.tzinfo is None:
-                last_alert = last_alert.replace(tzinfo=timezone.utc)
-
-            if not is_up:
-                if (not last_alert) or (now - last_alert > timedelta(hours=1)):
-                    print(f"🚨 ALERT: {site.url} is DOWN! Reason: {error_message}")
-                    try:
-                        send_alert_email(site.url)
-                    except Exception as e:
-                        print(f"Failed to send alert email: {e}")
-                    site.last_alert_time = now
-            else:
-                site.last_alert_time = None
 
             db.session.commit()
             print(f"[{datetime.now()}] Checked {site.url} - {'UP' if is_up else 'DOWN'}. Details: {error_message if error_message else f'Response Time: {response_time_ms}ms'}")
