@@ -20,10 +20,6 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_HOST }} << 'EOF'
-            export EMAIL_USER="${{ secrets.EMAIL_USER }}"
-            export EMAIL_PASS="${{ secrets.EMAIL_PASS }}"
-            export ALERT_RECIPIENT="${{ secrets.ALERT_RECIPIENT }}"
-
             cd ~/uptime-arena
             git pull origin main
 
