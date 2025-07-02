@@ -5,7 +5,7 @@ from flask_cors import CORS
 from datetime import datetime, timezone
 import uptime_checker
 
-app = Flask(__name__, static_folder="../client/dist", static_url_path="")
+app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_object(config)
 db.init_app(app)
