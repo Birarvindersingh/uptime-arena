@@ -13,7 +13,6 @@ class Site(db.Model):
     url = db.Column(db.String(255), nullable=False)
     is_up = db.Column(db.Boolean, default=True)
     last_checked = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    last_alert_time = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     statuses = db.relationship('Status', backref='site', lazy=True)
