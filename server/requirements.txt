@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 Flask-Cors
 requests
 gunicorn
+prometheus_client

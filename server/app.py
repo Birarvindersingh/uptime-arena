@@ -5,10 +5,24 @@ from flask_cors import CORS
 from datetime import datetime, timezone
 import uptime_checker
 
+from prometheus_client import generate_latest, Gauge, Summary
+
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_object(config)
 db.init_app(app)
+
+SITE_UP_STATUS = Gauge(
+    'site_up_status',
+    'Current uptime status of the site (1=up, 0=down)',
+    ['url', 'user']
+)
+
+SITE_RESPONSE_TIME = Summary(
+    'site_response_time_seconds',
+    'Response time of the site in seconds',
+    ['url', 'user']
+)
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -37,19 +51,23 @@ def get_sites():
 
     for site in sites:
         recent_statuses = Status.query.filter_by(site_id=site.id)\
-                               .order_by(Status.timestamp.desc())\
-                               .limit(RECENT_COUNT).all()
-        
+                                     .order_by(Status.timestamp.desc())\
+                                     .limit(RECENT_COUNT).all()
+
         uptimes = [status.is_up for status in recent_statuses]
-        
+
         uptime_percent = round((sum(uptimes) / len(uptimes)) * 100, 2) if uptimes else 100.0
-        
+
         data.append({
             "url": site.url,
             "user": site.user.username if site.user else None,
             "uptime": uptime_percent,
             "is_up_current": site.is_up
         })
+
+        user_label = site.user.username if site.user else "unknown"
+        SITE_UP_STATUS.labels(url=site.url, user=user_label).set(1 if site.is_up else 0)
+
     return jsonify(data)
 
 @app.route("/api/sites", methods=["POST"])
@@ -80,8 +98,8 @@ def add_site():
     db.session.add(new_site)
     db.session.flush()
 
-    is_up, response_time_ms, error_message, final_url_after_redirect = uptime_checker.check_site_status(normalized_url) 
-    
+    is_up, response_time_ms, error_message, final_url_after_redirect = uptime_checker.check_site_status(normalized_url)
+
     if final_url_after_redirect:
         new_site.url = final_url_after_redirect
 
@@ -99,7 +117,16 @@ def add_site():
 
     db.session.commit()
 
+    user_label = user.username if user else "unknown"
+    SITE_UP_STATUS.labels(url=new_site.url, user=user_label).set(1 if is_up else 0)
+    if response_time_ms is not None:
+        SITE_RESPONSE_TIME.labels(url=new_site.url, user=user_label).observe(response_time_ms / 1000.0)
+
     return jsonify({"message": "Site added successfully", "initial_status": "UP" if is_up else "DOWN"}), 201
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': 'text/plain; version=0.0.4; charset=utf-8'}
 
 if __name__ == "__main__":
     with app.app_context():
