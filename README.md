@@ -64,7 +64,7 @@
     <li>GitHub Actions builds and pushes the Docker image on each push</li>
     <li>Automatically deploys to AWS EC2 via SSH</li>
     <li>EC2 instance pulls the latest Docker image and runs the container automatically</li>
-  </ul
+  </ul>
 
   <h2>✅ Conclusion</h2>
   <p>This project demonstrates hands-on DevOps experience by combining cloud deployment, containerization, and real-time monitoring into a seamless, production-ready solution.</p>
